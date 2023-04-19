@@ -1,0 +1,20 @@
+module Insurance where
+
+-- Define a contract Policy
+data Policy = Policy
+  { policyHolder : Party
+  , insuredItem : Text
+  , coverageAmount : Decimal
+  , startDate : Date
+  , endDate : Date
+  }
+  deriving (Eq, Show)
+
+-- Define a claim 
+data Claim = Claim
+  { claimant : Party
+  , policy : ContractId Policy
+  , claimAmount : Decimal
+  , claimDate : Date
+  }
+  deriving (Eq, Show)

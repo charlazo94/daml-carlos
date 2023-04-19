@@ -1,0 +1,13 @@
+module DatabaseInterface where
+
+import Insurance
+import DA.Next.Postgres.Connection (Connection)
+
+-- | Add Policy in the database
+addPolicy : Policy -> Connection ()
+-- | Add claim in the database
+addClaim : Claim -> Connection ()
+-- | get policies of a holder
+getPoliciesByHolder : Party -> Connection [Policy]
+-- | Get claims from a claimer
+getClaimsByClaimant : Party -> Connection [Claim]

@@ -1,0 +1,37 @@
+module DatabaseImpl where
+
+import DatabaseInterface
+import DA.Next.Postgres.Connection (Connection)
+import DA.Next.Postgres.Types (PGType(..), SQLType(..))
+import DA.Next.Postgres.Execute (execute)
+import DA.Next.Postgres.Query (query)
+
+import Insurance
+
+-- | Add policy in database
+addPolicy : Policy -> Connection ()
+addPolicy policy = do
+    execute "INSERT INTO policies (policy_holder, insured_item, coverage_amount, start_date, end_date) VALUES (?, ?, ?, ?, ?);"
+        (PGType_Text policy.policyHolder, PGType_Text policy.insuredItem, PGType_Numeric policy.coverageAmount, PGType_Date policy.startDate, PGType_Date policy.endDate)
+    return ()
+
+-- | Add clain in database
+addClaim : Claim -> Connection ()
+addClaim claim = do
+    execute "INSERT INTO claims (claimant, policy_id, claim_amount, claim_date) VALUES (?, ?, ?, ?);"
+        (PGType_Text claim.claimant, PGType_Int claim.policyId, PGType_Numeric claim.claimAmount, PGType_Date claim.claimDate)
+    return ()
+
+-- | get policies of a holder
+getPoliciesByHolder : Party -> Connection [Policy]
+getPoliciesByHolder holder = do
+    result <- query "SELECT policy_id, policy_holder, insured_item, coverage_amount, start_date, end_date FROM policies WHERE policy_holder = ?;"
+        (PGType_Text holder)
+    return $ map (\(policyId, policyHolder, insuredItem, coverageAmount, startDate, endDate) -> Policy policyId policyHolder insuredItem coverageAmount startDate endDate) result
+
+-- | Get claims from a claimer
+getClaimsByClaimant : Party -> Connection [Claim]
+getClaimsByClaimant claimant = do
+    result <- query "SELECT claim_id, claimant, policy_id, claim_amount, claim_date FROM claims WHERE claimant = ?;"
+        (PGType_Text claimant)
+    return $ map (\(claimId, claimant, policyId, claimAmount, claimDate) -> Claim claimId claimant policyId claimAmount claimDate) result

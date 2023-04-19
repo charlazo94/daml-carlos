@@ -1,0 +1,20 @@
+import Insurance
+
+template Policy
+  with
+    policyHolder : Party
+    insuredItem : Text
+    coverageAmount : Decimal
+    startDate : Date
+    endDate : Date
+  where
+    signatory policyHolder
+
+    -- Define a function in order to check if the policy pass the claim
+    controller CheckClaim : ContractId Claim -> Update ()
+      do
+        c <- fetch
+        p <- fetch (claimPolicy c)
+        assert (startDate p <= claimDate c) "La reclamación se presenta antes del inicio de la póliza."
+        assert (endDate p >= claimDate c) "La reclamación se presenta después del vencimiento de la póliza."
+        assert (coverageAmount p >= claimAmount c) "La reclamación excede el monto de cobertura de la póliza."
