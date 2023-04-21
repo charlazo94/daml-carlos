@@ -1,0 +1,21 @@
+-- BankWithdrawal.daml
+
+module BankWithdrawal where
+
+import BankAccount
+
+template Withdrawal
+  with
+    fromAccount : Party
+    toAccount : Party
+    amount : Int
+  where
+    signatory fromAccount
+
+    controller fromAccount can
+      WithdrawFromAccountBW : (ContractId BankAccount)
+        with
+          account : ContractId BankAccount
+        do
+          withdrawAccount <- exercise account Withdraw with amount = amount
+          return withdrawAccount

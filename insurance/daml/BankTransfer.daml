@@ -1,0 +1,24 @@
+-- BankTransfer.daml
+
+module BankTransfer where
+
+import BankAccount
+import BankWithdrawal
+
+template BankTransfer
+  with
+    fromAccount : Party
+    toAccount : Party
+    amount : Int
+  where
+    signatory fromAccount
+
+    controller fromAccount can
+      Transfer : ()
+        with
+          fromAcc : ContractId BankAccount
+          toAcc : ContractId BankAccount
+        do
+          withdrawAccount <- exercise fromAcc Withdraw with amount = amount
+          depositAccount <- exercise toAcc Deposit with amount = amount
+          return ()

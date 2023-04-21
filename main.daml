@@ -1,0 +1,76 @@
+module Main where
+
+import Daml.Script
+import Daml.Script.Prelude hiding (maximum)
+
+data Policy = Policy with
+  policyId : Party
+  insurer : Party
+  insured : Party
+  amount : Decimal
+  startDate : Date
+  endDate : Date
+    deriving (Eq, Show)
+
+policyTemplate : Template Policy
+policyTemplate = createTemplate $ Policy
+  with
+    signatory insurer
+    key policyId
+  do
+    assert $ amount > 0.0
+    assert $ startDate <= endDate
+
+data Claim = Claim with
+  claimId : Party
+  policyId : Party
+  insurer : Party
+  insured : Party
+  amount : Decimal
+  date : Date
+    deriving (Eq, Show)
+
+claimTemplate : Template Claim
+claimTemplate = createTemplate $ Claim
+  with
+    signatory insurer
+    observer insured
+    key claimId
+  do
+    assert $ amount > 0.0
+
+allocateClaim : Claim -> Update ()
+allocateClaim claim = do
+  let policyId = claim.policyId
+  policy <- fetchByKey @Policy policyId
+  when (policy.insurer /= claim.insurer) $ abort "Only the insurer of the policy can allocate a claim"
+  let remainingAmount = policy.amount - sum ([c.amount | c <- query @Claim (\c -> c.policyId == policyId && c.date <= policy.endDate)])
+  when (claim.amount > remainingAmount) $ abort "The claim amount exceeds the remaining amount of the policy"
+  submit $ policyId `exerciseByKey` AllocateClaim claim
+
+toTemplate (policyTemplate, claimTemplate)
+
+setup : Script ()
+setup = do
+  createCmd policyTemplate Policy with
+    policyId = "policy-1"
+    insurer = "insurer-1"
+    insured = "insured-1"
+    amount = 1000.0
+    startDate = "2022-01-01"
+    endDate = "2022-12-31"
+  createCmd policyTemplate Policy with
+    policyId = "policy-2"
+    insurer = "insurer-2"
+    insured = "insured-2"
+    amount = 5000.0
+    startDate = "2022-06-01"
+    endDate = "2023-05-31"
+  createCmd claimTemplate Claim with
+    claimId = "claim-1"
+    policyId = "policy-1"
+    insurer = "insurer-1"
+    insured = "insured-1"
+    amount = 500.0
+    date = "2022-07-01"
+  return ()

@@ -1,0 +1,23 @@
+module BankAccount where
+
+template BankAccount
+  with
+    owner : Party
+    balance : Int
+  where
+    signatory owner
+
+    controller owner can
+      Deposit : ContractId BankAccount
+        with
+          amount : Int
+        do
+          create this with balance = balance + amount
+
+    controller owner can
+      Withdraw : ContractId BankAccount
+        with
+          amount : Int
+        do
+          assert (balance >= amount)
+          create this with balance = balance - amount

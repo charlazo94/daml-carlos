@@ -1,0 +1,22 @@
+module Main where
+
+import BankAccount
+import BankWithdrawal
+import BankTransfer
+import Daml.Script
+import Daml.Script.Free
+
+
+
+main : Script ()
+main = do
+  let alice = "Alice"
+  let bob = "Bob"
+  aliceAccountId <- submit alice $ createCmd BankAccount with owner = alice, balance = 1000
+  bobAccountId <- submit bob $ createCmd BankAccount with owner = bob, balance = 1000
+  let transferAmt = 500
+  _ <- submit alice $ exerciseCmd aliceAccountId (BankTransfer.Transfer with fromAcc = aliceAccountId, toAcc = bobAccountId)
+  aliceAccount <- fetch alice aliceAccountId
+  bobAccount <- fetch bob bobAccountId
+  bobAccount
+

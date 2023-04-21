@@ -11,8 +11,8 @@ template Policy
     signatory policyHolder
 
     -- Define a function in order to check if the policy pass the claim
-    controller CheckClaim : ContractId Claim -> Update ()
-      do
+    controller CheckClaim : ContractId Claim -> Update () 
+      do 
         c <- fetch
         p <- fetch (claimPolicy c)
         assert (startDate p <= claimDate c) "La reclamación se presenta antes del inicio de la póliza."
