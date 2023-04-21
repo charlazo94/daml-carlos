@@ -1,9 +1,9 @@
 -- BankTransfer.daml
-
 module BankTransfer where
 
-import BankAccount -- Import the BankAccount module, which contains the BankAccount template that will be used in this module.
-import BankWithdrawal -- Import the BankWithdrawal module, which contains the Withdrawal template that will be used in this module.
+-- Import the BankAccount and BankWithdrawal modules, which are required for this template.
+import BankAccount
+import BankWithdrawal
 
 -- Define a DAML template called BankTransfer that represents a transfer of funds from one bank account to another.
 template BankTransfer
@@ -24,9 +24,9 @@ template BankTransfer
           fromAcc : ContractId BankAccount  -- The contract ID of the BankAccount contract from which the funds will be transferred.
           toAcc : ContractId BankAccount    -- The contract ID of the BankAccount contract to which the funds will be transferred.
         do
-          -- Withdraw the funds from the fromAccount using the WithdrawFromAccountBW choice of the Withdrawal template.
-          withdrawAccount <- exercise fromAcc (WithdrawFromAccountBW toAccount) with amount = amount
-          -- Deposit the funds into the toAccount using the Deposit choice of the BankAccount contract.
+          -- Withdraw the specified amount of funds from the fromAcc contract using the Withdraw choice of the BankAccount template.
+          withdrawAccount <- exercise fromAcc Withdraw with amount = amount
+          -- Deposit the withdrawn funds into the toAcc contract using the Deposit choice of the BankAccount template.
           depositAccount <- exercise toAcc Deposit with amount = amount
           -- Return nothing, as the transfer is complete.
           return ()
