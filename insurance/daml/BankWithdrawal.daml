@@ -2,20 +2,27 @@
 
 module BankWithdrawal where
 
-import BankAccount
+import BankAccount -- Import the BankAccount module, which contains the BankAccount template that will be used in this module.
 
+-- Define a DAML template called Withdrawal that represents a withdrawal of funds from one bank account to another.
 template Withdrawal
   with
-    fromAccount : Party
-    toAccount : Party
-    amount : Int
+    fromAccount : Party  -- The party that owns the account from which the funds will be withdrawn.
+    toAccount : Party    -- The party that owns the account to which the funds will be transferred.
+    amount : Int         -- The amount of funds to be withdrawn and transferred, represented by an integer.
   where
+    -- The "where" part indicates that some additional clauses are going to be defined for the Withdrawal template.
+
+    -- The owner of the fromAccount is the only signatory of any contract created from this template.
     signatory fromAccount
 
+    -- The owner of the fromAccount can initiate a withdrawal from the account.
     controller fromAccount can
-      WithdrawFromAccountBW : (ContractId BankAccount)
+      WithdrawFromAccountBW : (ContractId BankAccount)  -- The type of the return value is ContractId BankAccount, indicating that a new contract of the BankAccount template will be created.
         with
-          account : ContractId BankAccount
+          account : ContractId BankAccount  -- The contract ID of the BankAccount contract from which the funds will be withdrawn.
         do
+          -- Exercise the Withdraw choice of the BankAccount contract to withdraw funds from the account.
           withdrawAccount <- exercise account Withdraw with amount = amount
+          -- Return the contract ID of the BankAccount contract with the updated balance after the withdrawal.
           return withdrawAccount

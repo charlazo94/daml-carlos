@@ -1,23 +1,29 @@
 module BankAccount where
 
+-- Define a DAML template called BankAccount representing a bank account.
 template BankAccount
   with
-    owner : Party
-    balance : Int
+    owner : Party      -- The owner of the bank account, identified by a Party identifier.
+    balance : Int      -- The balance of the bank account, represented by an integer.
   where
+    -- The "where" part indicates that some additional clauses are going to be defined for the BankAccount template.
+
+    -- The owner of the bank account is the only signatory of any contract created from this template.
     signatory owner
 
+    -- The owner of the bank account can make a deposit into the account.
     controller owner can
       Deposit : ContractId BankAccount
         with
-          amount : Int
+          amount : Int  -- The amount to be deposited into the bank account, represented by an integer.
         do
-          create this with balance = balance + amount
+          create this with balance = balance + amount  -- Create a new bank account contract with the updated balance.
 
+    -- The owner of the bank account can withdraw money from the account.
     controller owner can
       Withdraw : ContractId BankAccount
         with
-          amount : Int
+          amount : Int  -- The amount to be withdrawn from the bank account, represented by an integer.
         do
-          assert (balance >= amount)
-          create this with balance = balance - amount
+          assert (balance >= amount)  -- Verify that the account balance is sufficient to make the withdrawal.
+          create this with balance = balance - amount  -- Create a new bank account contract with the updated balance after the withdrawal.

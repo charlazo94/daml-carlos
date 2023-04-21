@@ -2,23 +2,31 @@
 
 module BankTransfer where
 
-import BankAccount
-import BankWithdrawal
+import BankAccount -- Import the BankAccount module, which contains the BankAccount template that will be used in this module.
+import BankWithdrawal -- Import the BankWithdrawal module, which contains the Withdrawal template that will be used in this module.
 
+-- Define a DAML template called BankTransfer that represents a transfer of funds from one bank account to another.
 template BankTransfer
   with
-    fromAccount : Party
-    toAccount : Party
-    amount : Int
+    fromAccount : Party  -- The party that owns the account from which the funds will be transferred.
+    toAccount : Party    -- The party that owns the account to which the funds will be transferred.
+    amount : Int         -- The amount of funds to be transferred, represented by an integer.
   where
+    -- The "where" part indicates that some additional clauses are going to be defined for the BankTransfer template.
+
+    -- The owner of the fromAccount is the only signatory of any contract created from this template.
     signatory fromAccount
 
+    -- The owner of the fromAccount can initiate a transfer from the account to another account.
     controller fromAccount can
-      Transfer : ()
+      Transfer : ()  -- The return value is of type unit, indicating that no data is returned from this choice.
         with
-          fromAcc : ContractId BankAccount
-          toAcc : ContractId BankAccount
+          fromAcc : ContractId BankAccount  -- The contract ID of the BankAccount contract from which the funds will be transferred.
+          toAcc : ContractId BankAccount    -- The contract ID of the BankAccount contract to which the funds will be transferred.
         do
-          withdrawAccount <- exercise fromAcc Withdraw with amount = amount
+          -- Withdraw the funds from the fromAccount using the WithdrawFromAccountBW choice of the Withdrawal template.
+          withdrawAccount <- exercise fromAcc (WithdrawFromAccountBW toAccount) with amount = amount
+          -- Deposit the funds into the toAccount using the Deposit choice of the BankAccount contract.
           depositAccount <- exercise toAcc Deposit with amount = amount
+          -- Return nothing, as the transfer is complete.
           return ()
